@@ -1,0 +1,9 @@
+node_modules/
+dist/
+exports/
+*.log
+.env
+.env.*
+linkedin-mcp.config.json
+.linkedin-profile-manager/
+.DS_Store

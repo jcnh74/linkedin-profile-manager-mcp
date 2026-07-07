@@ -1,0 +1,6 @@
+{
+  "dataDir": "~/.linkedin-profile-manager",
+  "profileSlug": "your-linkedin-slug",
+  "allowReadOnlyBrowserExtraction": false,
+  "enableOfficialPosting": false
+}
