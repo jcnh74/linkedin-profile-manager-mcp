@@ -26,7 +26,8 @@ export type Job = z.infer<typeof JobSchema>;
 
 export type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
 
-const stripHtml = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+const stripHtml = (s: string) =>
+  s.replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ").trim();
 
 export async function fetchRemotive(
   query: string,
