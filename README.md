@@ -64,6 +64,17 @@ track_applications(update: applied)          # local tracker with follow-up remi
 
 **Why no auto-apply?** There is no official API for member job applications, and automating Easy Apply through your browser session is both against LinkedIn's User Agreement and one of the most aggressively detected bot behaviors on the platform. The server automates everything up to the click; the click is yours.
 
+### Daily scan watchdog (optional)
+
+`scripts/job-scan.mjs` is a standalone scanner built for schedulers (cron, launchd, Hermes cron): it fetches from the same public APIs, scores against your saved snapshot, remembers what it's shown you, and **prints only new jobs at/above the fit threshold — silence means no news**.
+
+```bash
+npm run build
+node scripts/job-scan.mjs 60 "senior full stack engineer" "ai agents"
+```
+
+Wire it to a daily schedule and pipe stdout to your notifier of choice. Requires a profile snapshot (run `get_profile_snapshot` once first). State lives in `~/.linkedin-profile-manager/cron-seen-jobs.json` (override dir with `JOB_SCAN_DATA_DIR`).
+
 ## Requirements
 
 - Node.js ≥ 20
