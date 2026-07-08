@@ -27,9 +27,15 @@ import { ProposedChangeInput, runGenerateUpdatePlan, UpdatePlan } from "./tools/
 import { runExportProfilePatch } from "./tools/exportProfilePatch.js";
 import { CreateLinkedInPostInput, runCreateLinkedInPost } from "./tools/createLinkedInPost.js";
 import { OpenEditPageInput, runOpenEditPage } from "./tools/openEditPage.js";
+import { JobStore } from "./jobs/jobStore.js";
+import { ScanJobsInput, runScanJobs } from "./tools/scanJobs.js";
+import { RankJobFitInput, runRankJobFit } from "./tools/rankJobFit.js";
+import { PrepareApplicationInput, runPrepareApplication } from "./tools/prepareApplication.js";
+import { TrackApplicationsInput, runTrackApplications } from "./tools/trackApplications.js";
 
 const config = loadConfig();
 const store = new LocalProfileStore(config.dataDir);
+const jobStore = new JobStore(config.dataDir);
 
 /** Keep the last generated plan in memory so export can reuse it. */
 let lastPlan: UpdatePlan | null = null;
@@ -209,6 +215,54 @@ server.registerTool(
     inputSchema: OpenEditPageInput.shape,
   },
   async (args) => jsonResult(runOpenEditPage(OpenEditPageInput.parse(args)))
+);
+
+// ── 11. scan_jobs ──────────────────────────────────────────────────────────
+server.registerTool(
+  "scan_jobs",
+  {
+    title: "Scan jobs (public APIs)",
+    description: `${riskBanner("local-write")} Fetch jobs matching a query from legitimate public job APIs (Remotive, RemoteOK) and cache them locally. Also returns a pre-filtered LinkedIn job-search URL for manual browsing — LinkedIn listings are never scraped.`,
+    inputSchema: ScanJobsInput.shape,
+  },
+  async (args) => jsonResult(await runScanJobs(ScanJobsInput.parse(args), jobStore))
+);
+
+// ── 12. rank_job_fit ───────────────────────────────────────────────────────
+server.registerTool(
+  "rank_job_fit",
+  {
+    title: "Rank job fit",
+    description: `${riskBanner("read-only")} Score cached jobs against your profile snapshot (keyword overlap + title affinity, 0-100) so you focus on high-fit roles.`,
+    inputSchema: RankJobFitInput.shape,
+  },
+  async (args) => {
+    const a = RankJobFitInput.parse(args);
+    return jsonResult(runRankJobFit({ jobId: a.jobId, minScore: a.minScore, top: a.top }, requireSnapshot(), jobStore));
+  }
+);
+
+// ── 13. prepare_application ────────────────────────────────────────────────
+server.registerTool(
+  "prepare_application",
+  {
+    title: "Prepare application (never auto-applies)",
+    description: `${riskBanner("draft-only")} For a cached job: fit summary, tailored talking points from your REAL experience, a cover note draft, and the apply URL. YOU open the URL and submit — this server never auto-applies.`,
+    inputSchema: PrepareApplicationInput.shape,
+  },
+  async (args) =>
+    jsonResult(runPrepareApplication(PrepareApplicationInput.parse(args), requireSnapshot(), jobStore))
+);
+
+// ── 14. track_applications ─────────────────────────────────────────────────
+server.registerTool(
+  "track_applications",
+  {
+    title: "Track applications",
+    description: `${riskBanner("local-write")} Local application tracker: list all applications (with status counts + due follow-ups) or update one (status, notes, followUpAt).`,
+    inputSchema: TrackApplicationsInput.shape,
+  },
+  async (args) => jsonResult(runTrackApplications(TrackApplicationsInput.parse(args), jobStore))
 );
 
 // ── start ──────────────────────────────────────────────────────────────────

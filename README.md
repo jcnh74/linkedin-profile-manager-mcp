@@ -1,6 +1,6 @@
 # linkedin-profile-manager-mcp
 
-![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen) ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue) ![MCP](https://img.shields.io/badge/MCP-stdio-purple) ![Tests](https://img.shields.io/badge/tests-30%20passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-yellow)
+![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen) ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue) ![MCP](https://img.shields.io/badge/MCP-stdio-purple) ![Tests](https://img.shields.io/badge/tests-39%20passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-yellow)
 
 **Local-first MCP server for managing and improving your personal LinkedIn profile — safely.**
 
@@ -47,6 +47,22 @@ Conclusions that shaped this project:
 | `export_profile_patch` | local-write | Saves the plan as Markdown + JSON under `~/.linkedin-profile-manager/exports/`. Never pushes. |
 | `create_linkedin_post` | publishes-content ⚠️ | Draft-first. Publishing requires preview→approval-token→confirm AND official OAuth AND `enableOfficialPosting: true`. |
 | `open_edit_page` | opens-browser ⚠️ | Opens a `linkedin.com` edit URL in your default browser (OS `open` only). You edit and save by hand. |
+| `scan_jobs` | local-write | Fetch matching jobs from **public job APIs** (Remotive, RemoteOK) and cache them locally. Also returns a pre-filtered LinkedIn job-search URL for manual browsing — LinkedIn listings are never scraped. |
+| `rank_job_fit` | read-only | Score cached jobs against your profile snapshot (keyword overlap + title affinity, 0–100). |
+| `prepare_application` | draft-only | For a chosen job: fit summary, talking points from your **real** experience, cover note draft, and the apply URL. **You** open it and submit — never auto-applies. |
+| `track_applications` | local-write | Local application tracker: statuses, notes, follow-up dates, overdue follow-ups. |
+
+### Job-hunting workflow (scan → rank → prepare → you apply)
+
+```
+scan_jobs("senior full stack ai agents")     # public APIs + LinkedIn search URL
+rank_job_fit(minScore: 50)                   # fit-scored shortlist
+prepare_application(jobId: "remotive-123")   # talking points + cover note + apply URL
+→ you open the URL, personalize, click Apply
+track_applications(update: applied)          # local tracker with follow-up reminders
+```
+
+**Why no auto-apply?** There is no official API for member job applications, and automating Easy Apply through your browser session is both against LinkedIn's User Agreement and one of the most aggressively detected bot behaviors on the platform. The server automates everything up to the click; the click is yours.
 
 ## Requirements
 

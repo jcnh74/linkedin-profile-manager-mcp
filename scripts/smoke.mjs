@@ -26,7 +26,7 @@ child.stdout.on("data", (d) => {
         console.log(`OK — server exposes ${tools.length} tools:`);
         for (const t of tools) console.log(`  - ${t.name}`);
         child.kill();
-        process.exit(tools.length === 10 ? 0 : 1);
+        process.exit(tools.length === 14 ? 0 : 1);
       }
     } catch { /* partial line */ }
   }
